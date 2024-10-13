@@ -15,7 +15,6 @@ const collectables = [
 
 // group, name, info, caption, effect, dialog
 const fileGroups = [
-    // items/armor/etc
     {group: "accessories", name: "AccessoryName", info: "AccessoryInfo", caption: "AccessoryCaption" },
     {group: "arts", name: "ArtsName", caption: "ArtsCaption" },
     {group: "gems", name: "GemName", caption: "GemCaption", effect: "GemEffect", info: "GemInfo" },
@@ -23,34 +22,23 @@ const fileGroups = [
     {group: "loading", name: "LoadingTitle", caption: "LoadingText" },
     {group: "magic", name: "MagicName", caption: "MagicCaption", info: "MagicInfo" },
     {group: "protector", name: "ProtectorName", caption: "ProtectorCaption", info: "ProtectorInfo" },
-    {group: "tutorial", name: "TutorialTitle", caption: "TutorialBody" },
     {group: "weapon", name: "WeaponName", caption: "WeaponCaption", effect: "WeaponEffect", info: "WeaponInfo" },
-    
-    // these are all in game prompts. Both player messages and popups like "Selvuses Puppet: Do not touch"
-    {group: "prompt_gameplay", info: "EventTextForMap"},
-    {group: "prompt_gameplay", info: "EventTextForTalk"},
-    {group: "prompt_gameplay", info: "BloodMsg"},
-    {group: "prompt_gameplay", info: "ActionButtonText"},
-    {group: "prompt_gameplay", info: "GR_Dialogues"},
-    {group: "prompt_gameplay", info: "GR_KeyGuide"},
-    {group: "prompt_gameplay", info: "GR_MenuText"},
-    {group: "prompt_gameplay", info: "NetworkMessage"},
-    {group: "prompt_gameplay", info: "GR_System_Message_win64"}, // this is actually a single line from a subtitle. Not sure where the rest are
-
-    // split out from general prompts becaues it has species descriptions
-    {group: "prompt_character_creation", info: "GR_LineHelp"},
-
-    // _really boring_ prompts. Stuff like screen brightness and the terms of service
-    {group: "prompt_game_systems", info: "GR_System_Message_win64"},
-    {group: "prompt_game_systems", info: "TextEmbedImageName_win64"},
-    {group: "prompt_game_systems", info: "ToS_win64"},
-
-
     {group: "npcs", name: "NpcName"},
     {group: "places", name: "PlaceName"},
-
-    // dialog is a special case, will require extra parsing
     {group: "dialog", info: "TalkMsg"},
+
+    //dlc stuff
+    { group: "accessories_dlc01", name: "AccessoryName_dlc01", info: "AccessoryInfo_dlc01", caption: "AccessoryCaption_dlc01" },
+    { group: "arts_dlc01", name: "ArtsName_dlc01", caption: "ArtsCaption_dlc01" },
+    { group: "gems_dlc01", name: "GemName_dlc01", caption: "GemCaption_dlc01", effect: "GemEffect_dlc01", info: "GemInfo_dlc01" },
+    { group: "goods_dlc01", name: "GoodsName_dlc01", caption: "GoodsCaption_dlc01", effect: "GoodsInfo2_dlc01", info: "GoodsInfo_dlc01", dialog: "GoodsDialog_dlc01" },
+    { group: "loading_dlc01", name: "LoadingTitle_dlc01", caption: "LoadingText_dlc01" },
+    { group: "magic_dlc01", name: "MagicName_dlc01", caption: "MagicCaption_dlc01", info: "MagicInfo_dlc01" },
+    { group: "protector_dlc01", name: "ProtectorName_dlc01", caption: "ProtectorCaption_dlc01", info: "ProtectorInfo_dlc01" },
+    { group: "weapon_dlc01", name: "WeaponName_dlc01", caption: "WeaponCaption_dlc01", effect: "WeaponEffect_dlc01", info: "WeaponInfo_dlc01" },
+    { group: "npcs_dlc01", name: "NpcName_dlc01"},
+    { group: "places_dlc01", name: "PlaceName_dlc01"},
+    { group: "dialog_dlc01", info: "TalkMsg_dlc01"},
 ];
 
 const getTime = () => {
@@ -64,15 +52,12 @@ const loadFile = (() => {
         if (!fileName) return {};
         if (fileCache[fileName]) return fileCache[fileName];
         const xml_en = await fs.readFile(`text_dump_en/${fileName}.fmg.xml`);
-        const xml_jp = await fs.readFile(`text_dump_jp/${fileName}.fmg.xml`);
         const result_en = await xml2js.parseStringPromise(xml_en);
-        const result_jp = await xml2js.parseStringPromise(xml_jp);
         const items = {};
         for (let i in result_en.fmg.entries[0].text) {
             const en = result_en.fmg.entries[0].text[i];
-            const jp = result_jp.fmg.entries[0].text[i];
             if (en._ == "%null%") continue;
-            items[en.$.id] = {en: en._, jp: jp._};
+            items[en.$.id] = {en: en._};
         }
         fileCache[fileName] = items;
         return items;
@@ -91,7 +76,6 @@ const loadFileGroups = async toLoad => {
             for (let [id, value] of Object.entries(content)) {
                 group[id] = group[id] || {};
                 group[id][`${prop}_en`] = value.en;
-                group[id][`${prop}_jp`] = value.jp;
             }
         }
     }
@@ -266,11 +250,9 @@ for (let line of Object.values(groups.dialog)) {
 
 for (let dialog of Object.values(packedDialog)) {
     dialog.info_en = "";
-    dialog.info_jp = "";
     const sortedSections = Object.values(dialog.sections.sort((a, b) => a.sectionId.localeCompare(b.sectionId)));
     for (let section of sortedSections) {
         if (section.info_en) dialog.info_en += " " + section.info_en ?? "<br/>";
-        if (section.info_jp) dialog.info_jp += " " + section.info_jp ?? "<br/>";
     }
     delete dialog.sections;
 }
@@ -288,13 +270,11 @@ groups.dialog = Object.entries(packedDialog).reduce((acc, [id, dialog]) => {
 groups.dialog = Object.fromEntries(Object.entries(groups.dialog).map(([k, val]) => {
     const sorted = val.sort((a, b) => a.lineId.localeCompare(b.lineId));
     const en = sorted.map(i => `[${i.lineId}] ${i.info_en}`).join(`<br/><br/>`);
-    const jp = sorted.map(i => `[${i.lineId}] ${i.info_jp}`).join(`<br/><br/>`);
 
     return [k, {
         name_en: val[0].name_en,
         id: k,
         info_en: en,
-        info_jp: jp,
     }];
 }));
 
