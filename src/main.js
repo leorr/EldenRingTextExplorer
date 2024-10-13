@@ -20,7 +20,6 @@ const fileGroups = [
     {group: "gems", name: "GemName", caption: "GemCaption", effect: "GemEffect", info: "GemInfo" },
     {group: "goods", name: "GoodsName", caption: "GoodsCaption", effect: "GoodsInfo2", info: "GoodsInfo", dialog: "GoodsDialog" },
     {group: "loading", name: "LoadingTitle", caption: "LoadingText" },
-    {group: "magic", name: "MagicName", caption: "MagicCaption", info: "MagicInfo" },
     {group: "protector", name: "ProtectorName", caption: "ProtectorCaption", info: "ProtectorInfo" },
     {group: "weapon", name: "WeaponName", caption: "WeaponCaption", effect: "WeaponEffect", info: "WeaponInfo" },
     {group: "npcs", name: "NpcName"},
@@ -33,18 +32,12 @@ const fileGroups = [
     { group: "gems_dlc01", name: "GemName_dlc01", caption: "GemCaption_dlc01", effect: "GemEffect_dlc01", info: "GemInfo_dlc01" },
     { group: "goods_dlc01", name: "GoodsName_dlc01", caption: "GoodsCaption_dlc01", effect: "GoodsInfo2_dlc01", info: "GoodsInfo_dlc01", dialog: "GoodsDialog_dlc01" },
     { group: "loading_dlc01", name: "LoadingTitle_dlc01", caption: "LoadingText_dlc01" },
-    { group: "magic_dlc01", name: "MagicName_dlc01", caption: "MagicCaption_dlc01", info: "MagicInfo_dlc01" },
     { group: "protector_dlc01", name: "ProtectorName_dlc01", caption: "ProtectorCaption_dlc01", info: "ProtectorInfo_dlc01" },
     { group: "weapon_dlc01", name: "WeaponName_dlc01", caption: "WeaponCaption_dlc01", effect: "WeaponEffect_dlc01", info: "WeaponInfo_dlc01" },
     { group: "npcs_dlc01", name: "NpcName_dlc01"},
     { group: "places_dlc01", name: "PlaceName_dlc01"},
-    { group: "dialog_dlc01", info: "TalkMsg_dlc01"},
+    //{ group: "dialog_dlc01", info: "TalkMsg_dlc01"}, //todo fix later
 ];
-
-const getTime = () => {
-    var hrTime = process.hrtime()
-    return hrTime[0] * 1000000 + hrTime[1] / 1000; 
-};
 
 const loadFile = (() => {
     const fileCache = {};
@@ -63,6 +56,38 @@ const loadFile = (() => {
         return items;
     };
 })();
+
+//const loadFileGroups = async toLoad => {
+//    const loadableProps = ["name", "info", "caption", "effect", "dialog"];
+//    const groups = {};
+//    for (let nextGroup of toLoad) {
+//        groups[nextGroup.group] = groups[nextGroup.group] || {};
+//        const group = groups[nextGroup.group];
+//
+//        // Temporary object to hold the results by ID
+//        const tempGroup = {};
+//
+//        // Process each property type
+//        for (let prop of loadableProps) {
+//            const content = await loadFile(nextGroup[prop]);
+//            for (let [id, value] of Object.entries(content)) {
+//                tempGroup[id] = tempGroup[id] || {};
+//                tempGroup[id][`${prop}_en`] = value.en;
+//            }
+//        }
+//
+//        // Now transform tempGroup by replacing IDs with name_en and adding category
+//        for (let [id, values] of Object.entries(tempGroup)) {
+//            const nameKey = values.name_en; // Get name_en to use as the new key
+//            if (nameKey) {
+//                group[nameKey] = values; // Assign all props
+//                delete group[nameKey].name_en; // Remove name_en
+//                group[nameKey].category = nextGroup.group; // Add category
+//            }
+//        }
+//    }
+//    return groups;
+//};
 
 const loadFileGroups = async toLoad => {
     const loadableProps = ["name", "info", "caption", "effect", "dialog"];
