@@ -101,6 +101,7 @@ const loadFileGroups = async toLoad => {
             for (let [id, value] of Object.entries(content)) {
                 group[id] = group[id] || {};
                 group[id][`${prop}_en`] = value.en;
+                group[id].category = nextGroup.group; // Add category
             }
         }
     }
